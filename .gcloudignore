@@ -1,0 +1,8 @@
+.gcloudignore
+.git/
+.venv/
+__pycache__/
+*.pyc
+turnos_pb2.py
+turnos_pb2_grpc.py
+README.md

@@ -1,0 +1,71 @@
+// TurnoYa – Sistema de turnos para una sala de espera.
+//
+// Modelo: los turnos se reparten en orden (1, 2, 3, ...). El "turno actual" es
+// el último que llamó el operador (0 = todavía no se ha llamado a nadie).
+// Todo turno mayor que el actual y menor o igual al último entregado está en espera.
+
+syntax = "proto3";
+
+package turnoya;
+
+service TurnoService {
+  // Un cliente pide turno: recibe su número y cuántas personas tiene delante.
+  rpc PedirTurno (PedirTurnoRequest) returns (PedirTurnoResponse);
+
+  // El operador llama al siguiente turno de la fila.
+  rpc LlamarSiguiente (LlamarSiguienteRequest) returns (LlamarSiguienteResponse);
+
+  // Server streaming: el cliente se suscribe a su turno y el servidor le envía
+  // una actualización cada vez que la fila avanza. El stream termina con el
+  // mensaje "¡Es tu turno!".
+  rpc SeguirTurno (SeguirTurnoRequest) returns (stream ActualizacionTurno);
+
+  // Foto del estado de la fila.
+  rpc VerEstado (VerEstadoRequest) returns (EstadoResponse);
+}
+
+// ---------- PedirTurno ----------
+message PedirTurnoRequest {
+  string nombre = 1;            // Nombre del cliente (obligatorio)
+}
+
+message PedirTurnoResponse {
+  int32  numero = 1;            // Número de turno asignado
+  int32  personas_delante = 2;  // Personas que esperan antes que él
+  string mensaje = 3;           // Texto amigable para mostrar
+}
+
+// ---------- LlamarSiguiente ----------
+message LlamarSiguienteRequest {
+  string ventanilla = 1;        // Dónde debe acercarse el cliente (ej. "Ventanilla 1")
+}
+
+message LlamarSiguienteResponse {
+  bool   hay_turno = 1;         // false si no había nadie esperando
+  int32  numero = 2;            // Turno llamado
+  string nombre = 3;            // Nombre del cliente llamado
+  int32  en_espera = 4;         // Personas que siguen en espera después de llamar
+  string mensaje = 5;
+}
+
+// ---------- SeguirTurno (stream) ----------
+message SeguirTurnoRequest {
+  int32 numero = 1;             // Turno que el cliente quiere seguir
+}
+
+message ActualizacionTurno {
+  int32  numero = 1;            // Turno que se está siguiendo
+  int32  turno_actual = 2;      // Turno que está siendo atendido ahora
+  int32  personas_delante = 3;  // Personas que faltan antes que el cliente
+  bool   es_tu_turno = 4;       // true en el último mensaje del stream
+  string mensaje = 5;
+}
+
+// ---------- VerEstado ----------
+message VerEstadoRequest {}
+
+message EstadoResponse {
+  int32 turno_actual = 1;       // Último turno llamado (0 = ninguno)
+  int32 en_espera = 2;          // Total de personas esperando
+  int32 ultimo_entregado = 3;   // Último número de turno repartido
+}
