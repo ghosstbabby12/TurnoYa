@@ -1,5 +1,23 @@
+# Entorno virtual y caché de Python
 .venv/
 __pycache__/
 *.pyc
+
+# Código generado desde turnos.proto (se regenera con grpc_tools.protoc)
 turnos_pb2.py
 turnos_pb2_grpc.py
+
+# Secretos: tokens, variables de entorno, credenciales y certificados
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*token*
+*secret*
+*credentials*.json
+
+# Sistema operativo / editor
+.DS_Store
+.vscode/
+.idea/

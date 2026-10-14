@@ -6,12 +6,17 @@ Uso:
 """
 
 import sys
+import time
 
 import grpc
 
 import turnos_pb2
 import turnos_pb2_grpc
 from conexion import crear_canal
+
+# Cortes de conexión tras los que SeguirTurno se reconecta solo.
+RECONECTABLES = {grpc.StatusCode.INTERNAL, grpc.StatusCode.UNAVAILABLE}
+MAX_REINTENTOS = 3
 
 
 def pedir_turno(stub):
@@ -30,16 +35,31 @@ def seguir_turno(stub, numero):
         numero = int(texto)
 
     print(f"\n👀 Siguiendo el turno {numero} en tiempo real (Ctrl+C para volver al menú)\n")
-    stream = stub.SeguirTurno(turnos_pb2.SeguirTurnoRequest(numero=numero))
-    try:
-        for act in stream:
-            if act.es_tu_turno:
-                print(f"\n🔔 {act.mensaje}\a")
-            else:
-                print(f"   ⏳ {act.mensaje}")
-    except KeyboardInterrupt:
-        stream.cancel()
-        print("\nDejaste de seguir el turno.")
+    ultimo_mensaje = None
+    intentos = 0
+    while True:
+        stream = stub.SeguirTurno(turnos_pb2.SeguirTurnoRequest(numero=numero))
+        try:
+            for act in stream:
+                intentos = 0
+                if act.mensaje == ultimo_mensaje:
+                    continue  # estado repetido al reconectar
+                ultimo_mensaje = act.mensaje
+                if act.es_tu_turno:
+                    print(f"\n🔔 {act.mensaje}\a")
+                else:
+                    print(f"   ⏳ {act.mensaje}")
+            return
+        except KeyboardInterrupt:
+            stream.cancel()
+            print("\nDejaste de seguir el turno.")
+            return
+        except grpc.RpcError as e:
+            # Azure Container Apps cierra cada petición a los 240 s: nos volvemos a suscribir.
+            intentos += 1
+            if e.code() not in RECONECTABLES or intentos > MAX_REINTENTOS:
+                raise
+            time.sleep(1)
 
 
 def ver_estado(stub):

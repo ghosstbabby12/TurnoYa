@@ -25,6 +25,8 @@ log = logging.getLogger("turnoya")
 REVISAR_CONEXION_SEG = 5
 # Hilos del servidor: cada cliente que sigue su turno ocupa uno mientras espera.
 MAX_HILOS = 100
+# El servidor es público: se recorta el nombre para no guardar textos enormes.
+MAX_NOMBRE = 50
 
 
 class TurnoService(turnos_pb2_grpc.TurnoServiceServicer):
@@ -36,7 +38,7 @@ class TurnoService(turnos_pb2_grpc.TurnoServiceServicer):
         self._ventanillas = {}              # numero -> ventanilla que lo llamó
 
     def PedirTurno(self, request, context):
-        nombre = request.nombre.strip()
+        nombre = request.nombre.strip()[:MAX_NOMBRE]
         if not nombre:
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, "El nombre es obligatorio")
 

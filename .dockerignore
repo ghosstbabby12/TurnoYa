@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 turnos_pb2.py
 turnos_pb2_grpc.py
+.git/
+.env
+.env.*
+*.pem
+*.key
+README.md
