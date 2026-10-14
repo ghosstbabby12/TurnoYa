@@ -18,7 +18,7 @@ La comunicación entre clientes y servidor usa **gRPC**: Protocol Buffers sobre 
 | **Plataforma** | Azure Container Apps (suscripción Azure for Students) |
 | **Región** | Mexico Central |
 | **Transporte** | HTTP/2 de extremo a extremo, con TLS terminado por Azure |
-| **Imagen** | `ghcr.io/ghosstbabby12/turnoya:1` (Python 3.11) |
+| **Imagen** | `ghcr.io/ghosstbabby12/turnoya:2` (Python 3.11) |
 
 > Esa dirección no es una página web: abierta en el navegador muestra un error.
 > Para usarla hay que conectarse con un cliente gRPC, como `cliente.py` (ver [Probar contra la nube](#-probar-contra-la-nube)).
